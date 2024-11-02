@@ -1,5 +1,11 @@
 # Automatic Zen Garden
 
+
+
+https://github.com/user-attachments/assets/12716aad-e7b6-4afc-990e-4d80014d370e
+
+
+
 This is an Automatic **Zen** Garden with many pre-created movement modes. 
 
 It aims to be:
