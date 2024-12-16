@@ -1,0 +1,24 @@
+[project]
+name = "Automatic_Zen_Garden"
+version = "0.0.1"
+description = "A ball moving on sand xd "
+author = "Juan Camilo Guevara Hernández"
+
+[tasks]
+[tasks.programing]
+title = "a"
+description = "a"
+tags = ["sip", "nop"]
+finish = true
+priority = 1
+
+[members]
+[members.Josedddd1234]
+name = "Jose"
+roles = ["Engineer"]
+email = "josedddd201@gmail.com"
+
+[members.juanCamilo0509]
+name = "Camilo"
+roles = ["Designer", "Engineer"]
+email = "juank109845@gmail.com"
