@@ -1,22 +1,24 @@
-# const angleStepMc = 5.625 / 64 # Deg/steps with micro steps control
-const angleStep = 5.625 # Deg/steps
-
-const zp, zn = 17, 45
+const zp, zn = 17, 51
 const relation = zp / zn
 const R = 5 # mm
-const w1 = 5 # deg/s
-const w2 = 10 # deg/s
-const timesAngleStep = (angleStep / w1, angleStep / w2) # The time between steps to get the require angular velocity for each motor.
+const w1 = deg2rad(50) # rad/s
+const w2 = 15 # deg/s
 
-Iposition = (10, 4) # Initial position (mm, deg)
-Fposition = (30, 10) # Final position (mm, deg)
-function times(Iposition, Fposition)
-  r = Fposition[1] - Iposition[1] # Delta r
+Fposition = (20, 10) # Final position (mm, deg)
+function time_radious_motor(r)
   time_r = (r) / (w1 * R)
-  theta = Fposition[2] - Iposition[2] # Delta theta
-  t_theta = theta / (relation * w2)
-  return (time_r, t_theta)
+  return time_r
 end
-result = times(Iposition, Fposition)
-println("Time to go to the target position:\nRadial Motor: $(result[1])\nAngular Motor: $(result[2])\n")
-println("Time by step:\nRadial Motor: $(timesAngleStep[1])\nAngular Motor: $(timesAngleStep[2])")
+function time_angle_motor(theta)
+  t_theta = theta / (relation * w2)
+  return t_theta
+end
+function times(final_position)
+  return (time_radious_motor(final_position[1]), time_angle_motor(final_position[2]))
+end
+result = times(Fposition)
+println("Seconds")
+println("Time to go to the target position:
+        Radial Motor: $(result[1])
+        Angular Motor: $(result[2])"
+)
