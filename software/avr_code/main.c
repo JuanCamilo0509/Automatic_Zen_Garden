@@ -1,59 +1,70 @@
-#include <avr/io.h>
+#define __AVR_ATmega88__
 #include <avr/interrupt.h>
+#include <avr/io.h>
 unsigned char zn = 51;
 unsigned char zp = 17;
-volatile unsigned long radious_time; //segundos
-volatile unsigned long angular_time; //segundos
-float w1 = 50*3.14159265/180.0;
+float unitcycle = 5.625;
+volatile unsigned char angular_cycle;
+volatile unsigned char radious_cycle = 20;
+volatile unsigned char b = 1;
+volatile unsigned char d = 1;
+unsigned char w1 = 15;
 unsigned char w2 = 15;
 unsigned char R = 5;
 
-void SinglePhaseControl(unsigned int angular_velocity, volatile uint8_t* port) {
-  // TODO: speed and direction implementation.
-  unsigned int i;
-  for (i = 0; i < 4; i++) {
-    *port = (1 << i);
+void cycle_radious_motor(float final_radius) {
+  float result = final_radius * (unitcycle / (360 * 2 * 3.14159265 * R));
+  radious_cycle = (unsigned char)result;
+};
+
+void cycle_angular_motor(float final_angle) {
+  float result = final_angle / unitcycle;
+  angular_cycle = result;
+};
+
+ISR(TIMER0_OVF_vect) {
+  TCNT0 = 0x55;
+  if (angular_cycle > 0) {
+    if (b == 8) {
+      b = 1;
+    } else {
+      b = (b << 1);
+    }
+    angular_cycle -= 1;
+  } else {
+    TIMSK0 = 0;
   }
-  /*delay();*/
 }
 
-void time_radius_motor(unsigned char final_radius) { //Microseconds 
-  float time_r = (float) final_radius/(w1*R);
-  radious_time = (unsigned long)time_r*1000000;
-}
-
-void time_angle_motor(float final_angle) { //Microseconds 
-  float relation = (float)zp/zn;
-  float time_a = final_angle/(relation*w2);
-  angular_time = (unsigned long)time_a*1000000;
-}
-
-ISR(TIMER0_OVF_vect) { 
-  TCNT0 = 56;
-  if (radious_time > 0) radious_time -= 200;
-  if (angular_time > 0) angular_time -= 200;
+ISR(TIMER2_OVF_vect) {
+  TCNT2 = 0x55;
+  if (radious_cycle > 0) {
+    if (d == 8) {
+      d = 1;
+    } else {
+      d = (d << 1);
+    }
+    radious_cycle -= 1;
+  } else {
+    TIMSK2 = 0;
+  }
 }
 
 int main(void) {
   DDRB = 0xFF;
-  DDRC = 0xFF;
-  time_radius_motor(20);
-  time_angle_motor(10);
-  TCNT0 = 56; // Check the actual time
-  TCCR0B = 2; // Prescalar of clk/8
-  TIMSK0 = 1; // Overflow flag
+  /*Timer1*/
+  TCNT0 = 0x55; // From 0 to FF
+  TCCR0B = 5;   // Clock with no prescalar.
+  TIMSK0 = 1;
+  cycle_angular_motor(unitcycle * 4);
+  /*cycle_radious_motor(unitcycle * 10);*/
+  /*Timer2*/
+  TCNT2 = 0x55;
+  TCCR2B = 5;
+  TIMSK2 = 1;
   sei();
   while (1) {
-    if (radious_time != 0) {
-      SinglePhaseControl(3, &PORTB);
-    } else {
-      PORTB = 0;
-    }
-    if (angular_time != 0) {
-      SinglePhaseControl(3, &PORTC);
-    } else {
-      PORTC = 0;
-    }
+    PORTB = b;
+    PORTD = d;
   }
-  return 0;
 }
