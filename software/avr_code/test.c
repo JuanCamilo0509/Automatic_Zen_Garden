@@ -1,21 +1,31 @@
 #define F_CPU 8000000UL
 #define __AVR_ATmega88__
-/*#include <avr/interrupt.h>*/
+#include <avr/interrupt.h>
 #include <avr/io.h>
-#include <util/delay.h>
 
-volatile unsigned char b = 1;
+volatile unsigned char steps = 92;
+unsigned char time = 0x00;
+volatile unsigned char d = 1;
+
+ISR(TIMER0_OVF_vect) {
+  if (steps != 0) {
+    if (d == 8) {
+      d = 1;
+    } else {
+      d = (d << 1);
+    }
+    steps -= 1;
+  }
+  TCNT0 = time;
+}
 
 int main(void) {
-  DDRC = 0xFF;
-  unsigned char i;
+  DDRD = 0xFF;
+  TCNT0 = time;
+  TCCR0B = 3; // Clock with 1024.
+  TIMSK0 = (1 << TOIE0);
+  sei();
   while (1) {
-    b = 1;
-    for (i = 1; i < 5; i++) {
-      PORTC = b;
-      b = (b << 1);
-      _delay_ms(0.5);
-    }
+    PORTD = d;
   }
-  return 0;
 }
